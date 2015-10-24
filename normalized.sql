@@ -1,19 +1,25 @@
 -- 4. In normalized.sql Create a query to generate the tables needed to accomplish your normalized schema, including any primary and foreign key constraints. Logical renaming of columns is allowed.
 
+-- Since it is hard to insert data from another Database we import the data from the main table. Even though its one big table we can seperate the data easier ( since we don't have to cross databases )  We are creating 4 tables ( 1 is just a holder of information / copy of the denormal table )
+
+-- Import the denormal_data.sql ( this will create a table with ALL data )
 \i scripts/denormal_data.sql;
 
+-- Creating a make table
 CREATE TABLE IF NOT EXISTS make (
   id serial PRIMARY KEY NOT NULL,
   code character varying(125) NOT NULL,
   title character varying(125) NOT NULL
   );
 
+-- Creating a model table
 CREATE TABLE IF NOT EXISTS model (
   id serial PRIMARY KEY NOT NULL,
   code character varying(125) NOT NULL,
   title character varying(125) NOT NULL
   );
 
+-- Creating the main ( normalized ) table
 CREATE TABLE IF NOT EXISTS normalized (
   id SERIAL PRIMARY KEY NOT NULL,
   make_id INTEGER REFERENCES make(id) NOT NULL,
@@ -21,7 +27,7 @@ CREATE TABLE IF NOT EXISTS normalized (
   year integer NOT NULL
   );
 
--- Pulls data from denormal script
+-- Inserting data from the denormal table
 INSERT INTO make (code, title)
 SELECT DISTINCT car_models.make_code, car_models.make_title
 FROM car_models;
@@ -32,6 +38,7 @@ FROM car_models;
 
 -- 5. Using the resources that you now possess, In normal.sql Create queries to insert all of the data that was in the denormal_cars.car_models table, into the new normalized tables of the normal_cars database.
 
+-- Inserting both make and model tables into the final normalized table for finished product
 INSERT INTO normalized (make_id, model_id, year)
 SELECT make.id, model.id, year
 FROM make, model, car_models
